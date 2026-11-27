@@ -1,0 +1,6 @@
+# 只忽略一次性缓存；raw/ build/ docs/ 一律入库
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
+Thumbs.db

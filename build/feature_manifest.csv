@@ -1,0 +1,27 @@
+﻿feature,group,definition,asof
+d_医疗,A 可达性,W10 units.dist_医疗,2026-11 OSM
+d_教育,A 可达性,W10 units.dist_教育,2026-11 OSM
+d_购物,A 可达性,W10 units.dist_购物,2026-11 OSM
+d_公园,A 可达性,W10 units.dist_公园,2026-11 OSM
+d_地铁,A 可达性,W10 units.dist_地铁,2026-11 OSM
+d_中心,A 可达性,样本点 → 天府广场 haversine,2026-11 OSM
+n_fac_500,B 密度,500 m 内设施计数,2026-11 OSM
+n_fac_1000,B 密度,1000 m 内设施计数,2026-11 OSM
+n_sub_1000,B 密度,1000 m 内地铁站计数,2026-11 OSM
+n_park_1000,B 密度,1000 m 内公园计数,2026-11 OSM
+log_area,C 形态,住宅面面积取对数,2026-11 OSM
+log_households,C 形态,链家 总户数 取对数,2018 链家
+n_buildings,C 形态,链家 总栋数,2018 链家
+aging,C 形态,2018 − 建筑年代,2018 链家
+has_year,C 形态,建筑年代是否有值,2018 链家
+fee_yuan,D 配套,链家 物业费（区间取中值）,2018 链家
+complete_score,D 配套,W10 units.完备度（0–5）,2026-11 OSM
+bt_板楼,D 配套,链家 建筑类型 one-hot,2018 链家
+bt_塔楼/板楼,D 配套,链家 建筑类型 one-hot,2018 链家
+bt_板楼/塔板结合,D 配套,链家 建筑类型 one-hot,2018 链家
+bt_塔楼,D 配套,链家 建筑类型 one-hot,2018 链家
+bt_塔板结合,D 配套,链家 建筑类型 one-hot,2018 链家
+bt_塔楼/板楼/塔板结合,D 配套,链家 建筑类型 one-hot,2018 链家
+bt_塔楼/塔板结合,D 配套,链家 建筑类型 one-hot,2018 链家
+bt_未知类型,D 配套,链家 建筑类型 one-hot,2018 链家
+bt_other,D 配套,链家 建筑类型 one-hot,2018 链家

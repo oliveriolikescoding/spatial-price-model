@@ -1,0 +1,54 @@
+{
+  "raw_rows": 10078,
+  "raw_columns": [
+    "Unnamed: 0",
+    "ID",
+    "URL",
+    "小区名称",
+    "城市",
+    "区域",
+    "片区",
+    "参考均价",
+    "建筑年代",
+    "总栋数",
+    "总户数",
+    "开发商",
+    "物业费",
+    "物业公司",
+    "建筑类型",
+    "地址"
+  ],
+  "price_missing": 3321,
+  "after_price_drop": 6757,
+  "osm_units": 1334,
+  "osm_named_units": 1181,
+  "name_match_rows": 649,
+  "pass2_containment_hits": 87,
+  "drop_detail": {
+    "no_name_hit": 6078,
+    "ambiguous_same_district": 21,
+    "ambiguous_cross_district": 9
+  },
+  "price_outlier_dropped": 14,
+  "iqr_band": [
+    4655.0,
+    24764.0
+  ],
+  "rows_before_unit_dedup": 635,
+  "rows_dropped_by_unit_dedup": 99,
+  "final_samples": 525,
+  "district_count": 5,
+  "area_count": 96,
+  "district_dist": {
+    "金牛区": 135,
+    "武侯区": 124,
+    "成华区": 122,
+    "青羊区": 84,
+    "锦江区": 60
+  },
+  "districts_below_min": {
+    "新都区": 6,
+    "龙泉驿区": 5
+  },
+  "rows_dropped_thin_district": 11
+}

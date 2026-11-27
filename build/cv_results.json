@@ -1,0 +1,701 @@
+{
+  "n_samples": 525,
+  "n_features": 26,
+  "target": "区县内 log(单价) 的 z-score（折内估计均值/标准差）",
+  "results": [
+    {
+      "scheme": "random",
+      "model": "dummy",
+      "n": 525,
+      "r2": -0.0241,
+      "rmse": 1.0215,
+      "mae": 0.8168,
+      "r2_min_fold": -0.0795,
+      "r2_max_fold": -0.0005,
+      "metric_note": "按测试集样本数加权的折均值；不拼接各折 OOF 算全局 R²（各折 z 基准不同）",
+      "per_fold": [
+        {
+          "fold": 0,
+          "n_train": 420,
+          "n_test": 105,
+          "r2": -0.0289,
+          "rmse": 1.183,
+          "mae": 0.9519
+        },
+        {
+          "fold": 1,
+          "n_train": 420,
+          "n_test": 105,
+          "r2": -0.0092,
+          "rmse": 1.0985,
+          "mae": 0.8728
+        },
+        {
+          "fold": 2,
+          "n_train": 420,
+          "n_test": 105,
+          "r2": -0.0795,
+          "rmse": 0.8591,
+          "mae": 0.6489
+        },
+        {
+          "fold": 3,
+          "n_train": 420,
+          "n_test": 105,
+          "r2": -0.0005,
+          "rmse": 0.9375,
+          "mae": 0.785
+        },
+        {
+          "fold": 4,
+          "n_train": 420,
+          "n_test": 105,
+          "r2": -0.0023,
+          "rmse": 1.0292,
+          "mae": 0.8254
+        }
+      ]
+    },
+    {
+      "scheme": "random",
+      "model": "linear",
+      "n": 525,
+      "r2": -0.3238,
+      "rmse": 1.1263,
+      "mae": 0.7137,
+      "r2_min_fold": -2.342,
+      "r2_max_fold": 0.2374,
+      "metric_note": "按测试集样本数加权的折均值；不拼接各折 OOF 算全局 R²（各折 z 基准不同）",
+      "per_fold": [
+        {
+          "fold": 0,
+          "n_train": 420,
+          "n_test": 105,
+          "r2": -2.342,
+          "rmse": 2.1321,
+          "mae": 0.879
+        },
+        {
+          "fold": 1,
+          "n_train": 420,
+          "n_test": 105,
+          "r2": 0.2374,
+          "rmse": 0.9549,
+          "mae": 0.7589
+        },
+        {
+          "fold": 2,
+          "n_train": 420,
+          "n_test": 105,
+          "r2": 0.0542,
+          "rmse": 0.8041,
+          "mae": 0.579
+        },
+        {
+          "fold": 3,
+          "n_train": 420,
+          "n_test": 105,
+          "r2": 0.2136,
+          "rmse": 0.8312,
+          "mae": 0.6729
+        },
+        {
+          "fold": 4,
+          "n_train": 420,
+          "n_test": 105,
+          "r2": 0.2177,
+          "rmse": 0.9093,
+          "mae": 0.6786
+        }
+      ]
+    },
+    {
+      "scheme": "random",
+      "model": "hgb",
+      "n": 525,
+      "r2": 0.3494,
+      "rmse": 0.8086,
+      "mae": 0.6164,
+      "r2_min_fold": 0.2507,
+      "r2_max_fold": 0.4559,
+      "metric_note": "按测试集样本数加权的折均值；不拼接各折 OOF 算全局 R²（各折 z 基准不同）",
+      "per_fold": [
+        {
+          "fold": 0,
+          "n_train": 420,
+          "n_test": 105,
+          "r2": 0.4559,
+          "rmse": 0.8603,
+          "mae": 0.6104
+        },
+        {
+          "fold": 1,
+          "n_train": 420,
+          "n_test": 105,
+          "r2": 0.4101,
+          "rmse": 0.8398,
+          "mae": 0.6513
+        },
+        {
+          "fold": 2,
+          "n_train": 420,
+          "n_test": 105,
+          "r2": 0.2913,
+          "rmse": 0.6961,
+          "mae": 0.5485
+        },
+        {
+          "fold": 3,
+          "n_train": 420,
+          "n_test": 105,
+          "r2": 0.2507,
+          "rmse": 0.8113,
+          "mae": 0.6459
+        },
+        {
+          "fold": 4,
+          "n_train": 420,
+          "n_test": 105,
+          "r2": 0.3391,
+          "rmse": 0.8357,
+          "mae": 0.6258
+        }
+      ]
+    },
+    {
+      "scheme": "group_area",
+      "model": "dummy",
+      "n": 525,
+      "r2": -0.0246,
+      "rmse": 1.066,
+      "mae": 0.8479,
+      "r2_min_fold": -0.0374,
+      "r2_max_fold": -0.0011,
+      "metric_note": "按测试集样本数加权的折均值；不拼接各折 OOF 算全局 R²（各折 z 基准不同）",
+      "per_fold": [
+        {
+          "fold": 0,
+          "n_train": 420,
+          "n_test": 105,
+          "r2": -0.0173,
+          "rmse": 1.0563,
+          "mae": 0.8033
+        },
+        {
+          "fold": 1,
+          "n_train": 420,
+          "n_test": 105,
+          "r2": -0.0011,
+          "rmse": 1.1161,
+          "mae": 0.8888
+        },
+        {
+          "fold": 2,
+          "n_train": 420,
+          "n_test": 105,
+          "r2": -0.0322,
+          "rmse": 1.0677,
+          "mae": 0.8094
+        },
+        {
+          "fold": 3,
+          "n_train": 420,
+          "n_test": 105,
+          "r2": -0.035,
+          "rmse": 1.1631,
+          "mae": 0.9896
+        },
+        {
+          "fold": 4,
+          "n_train": 420,
+          "n_test": 105,
+          "r2": -0.0374,
+          "rmse": 0.927,
+          "mae": 0.7485
+        }
+      ]
+    },
+    {
+      "scheme": "group_area",
+      "model": "linear",
+      "n": 525,
+      "r2": -0.1038,
+      "rmse": 1.0901,
+      "mae": 0.7515,
+      "r2_min_fold": -1.0523,
+      "r2_max_fold": 0.23,
+      "metric_note": "按测试集样本数加权的折均值；不拼接各折 OOF 算全局 R²（各折 z 基准不同）",
+      "per_fold": [
+        {
+          "fold": 0,
+          "n_train": 420,
+          "n_test": 105,
+          "r2": -0.1047,
+          "rmse": 1.1007,
+          "mae": 0.7689
+        },
+        {
+          "fold": 1,
+          "n_train": 420,
+          "n_test": 105,
+          "r2": -1.0523,
+          "rmse": 1.598,
+          "mae": 0.8022
+        },
+        {
+          "fold": 2,
+          "n_train": 420,
+          "n_test": 105,
+          "r2": 0.2182,
+          "rmse": 0.9292,
+          "mae": 0.6955
+        },
+        {
+          "fold": 3,
+          "n_train": 420,
+          "n_test": 105,
+          "r2": 0.23,
+          "rmse": 1.0032,
+          "mae": 0.8431
+        },
+        {
+          "fold": 4,
+          "n_train": 420,
+          "n_test": 105,
+          "r2": 0.1897,
+          "rmse": 0.8192,
+          "mae": 0.6479
+        }
+      ]
+    },
+    {
+      "scheme": "group_area",
+      "model": "hgb",
+      "n": 525,
+      "r2": 0.2666,
+      "rmse": 0.8983,
+      "mae": 0.6944,
+      "r2_min_fold": 0.0832,
+      "r2_max_fold": 0.4277,
+      "metric_note": "按测试集样本数加权的折均值；不拼接各折 OOF 算全局 R²（各折 z 基准不同）",
+      "per_fold": [
+        {
+          "fold": 0,
+          "n_train": 420,
+          "n_test": 105,
+          "r2": 0.0832,
+          "rmse": 1.0027,
+          "mae": 0.7311
+        },
+        {
+          "fold": 1,
+          "n_train": 420,
+          "n_test": 105,
+          "r2": 0.4277,
+          "rmse": 0.8438,
+          "mae": 0.6612
+        },
+        {
+          "fold": 2,
+          "n_train": 420,
+          "n_test": 105,
+          "r2": 0.252,
+          "rmse": 0.9089,
+          "mae": 0.707
+        },
+        {
+          "fold": 3,
+          "n_train": 420,
+          "n_test": 105,
+          "r2": 0.2834,
+          "rmse": 0.9678,
+          "mae": 0.781
+        },
+        {
+          "fold": 4,
+          "n_train": 420,
+          "n_test": 105,
+          "r2": 0.2869,
+          "rmse": 0.7685,
+          "mae": 0.5918
+        }
+      ]
+    },
+    {
+      "scheme": "group_district",
+      "model": "dummy",
+      "n": 525,
+      "r2": -0.176,
+      "rmse": 1.0173,
+      "mae": 0.8128,
+      "r2_min_fold": -0.3523,
+      "r2_max_fold": -0.0178,
+      "metric_note": "按测试集样本数加权的折均值；不拼接各折 OOF 算全局 R²（各折 z 基准不同）",
+      "per_fold": [
+        {
+          "fold": 0,
+          "n_train": 390,
+          "n_test": 135,
+          "r2": -0.3523,
+          "rmse": 0.9487,
+          "mae": 0.7579
+        },
+        {
+          "fold": 1,
+          "n_train": 401,
+          "n_test": 124,
+          "r2": -0.0178,
+          "rmse": 0.8803,
+          "mae": 0.6826
+        },
+        {
+          "fold": 2,
+          "n_train": 403,
+          "n_test": 122,
+          "r2": -0.088,
+          "rmse": 0.9438,
+          "mae": 0.7691
+        },
+        {
+          "fold": 3,
+          "n_train": 441,
+          "n_test": 84,
+          "r2": -0.2447,
+          "rmse": 1.1949,
+          "mae": 0.9257
+        },
+        {
+          "fold": 4,
+          "n_train": 465,
+          "n_test": 60,
+          "r2": -0.1891,
+          "rmse": 1.3557,
+          "mae": 1.1358
+        }
+      ]
+    },
+    {
+      "scheme": "group_district",
+      "model": "linear",
+      "n": 525,
+      "r2": -0.6085,
+      "rmse": 1.126,
+      "mae": 0.716,
+      "r2_min_fold": -2.571,
+      "r2_max_fold": 0.3246,
+      "metric_note": "按测试集样本数加权的折均值；不拼接各折 OOF 算全局 R²（各折 z 基准不同）",
+      "per_fold": [
+        {
+          "fold": 0,
+          "n_train": 390,
+          "n_test": 135,
+          "r2": 0.0639,
+          "rmse": 0.7893,
+          "mae": 0.6123
+        },
+        {
+          "fold": 1,
+          "n_train": 401,
+          "n_test": 124,
+          "r2": -0.0398,
+          "rmse": 0.8898,
+          "mae": 0.6266
+        },
+        {
+          "fold": 2,
+          "n_train": 403,
+          "n_test": 122,
+          "r2": -2.571,
+          "rmse": 1.7099,
+          "mae": 0.7157
+        },
+        {
+          "fold": 3,
+          "n_train": 441,
+          "n_test": 84,
+          "r2": -0.3448,
+          "rmse": 1.242,
+          "mae": 0.9266
+        },
+        {
+          "fold": 4,
+          "n_train": 465,
+          "n_test": 60,
+          "r2": 0.3246,
+          "rmse": 1.0217,
+          "mae": 0.8401
+        }
+      ]
+    },
+    {
+      "scheme": "group_district",
+      "model": "hgb",
+      "n": 525,
+      "r2": 0.1615,
+      "rmse": 0.8443,
+      "mae": 0.6466,
+      "r2_min_fold": -0.0007,
+      "r2_max_fold": 0.6015,
+      "metric_note": "按测试集样本数加权的折均值；不拼接各折 OOF 算全局 R²（各折 z 基准不同）",
+      "per_fold": [
+        {
+          "fold": 0,
+          "n_train": 390,
+          "n_test": 135,
+          "r2": 0.0806,
+          "rmse": 0.7823,
+          "mae": 0.5936
+        },
+        {
+          "fold": 1,
+          "n_train": 401,
+          "n_test": 124,
+          "r2": 0.0575,
+          "rmse": 0.8472,
+          "mae": 0.6203
+        },
+        {
+          "fold": 2,
+          "n_train": 403,
+          "n_test": 122,
+          "r2": 0.2518,
+          "rmse": 0.7827,
+          "mae": 0.6156
+        },
+        {
+          "fold": 3,
+          "n_train": 441,
+          "n_test": 84,
+          "r2": -0.0007,
+          "rmse": 1.0714,
+          "mae": 0.8288
+        },
+        {
+          "fold": 4,
+          "n_train": 465,
+          "n_test": 60,
+          "r2": 0.6015,
+          "rmse": 0.7848,
+          "mae": 0.628
+        }
+      ]
+    }
+  ],
+  "ablation_no_complete_score": {
+    "scheme": "group_district",
+    "model": "hgb",
+    "n": 525,
+    "r2": 0.1601,
+    "rmse": 0.8442,
+    "mae": 0.6492,
+    "r2_min_fold": 0.0277,
+    "r2_max_fold": 0.6085,
+    "metric_note": "按测试集样本数加权的折均值；不拼接各折 OOF 算全局 R²（各折 z 基准不同）",
+    "per_fold": [
+      {
+        "fold": 0,
+        "n_train": 390,
+        "n_test": 135,
+        "r2": 0.086,
+        "rmse": 0.7799,
+        "mae": 0.5902
+      },
+      {
+        "fold": 1,
+        "n_train": 401,
+        "n_test": 124,
+        "r2": 0.0372,
+        "rmse": 0.8562,
+        "mae": 0.6282
+      },
+      {
+        "fold": 2,
+        "n_train": 403,
+        "n_test": 122,
+        "r2": 0.2378,
+        "rmse": 0.79,
+        "mae": 0.6289
+      },
+      {
+        "fold": 3,
+        "n_train": 441,
+        "n_test": 84,
+        "r2": 0.0277,
+        "rmse": 1.056,
+        "mae": 0.8243
+      },
+      {
+        "fold": 4,
+        "n_train": 465,
+        "n_test": 60,
+        "r2": 0.6085,
+        "rmse": 0.7779,
+        "mae": 0.6212
+      }
+    ]
+  },
+  "ablation_feature_groups": {
+    "spatial_only": {
+      "group_district": {
+        "r2": -0.5789,
+        "n_features": 10
+      },
+      "random": {
+        "r2": -0.0736,
+        "n_features": 10
+      }
+    },
+    "attribute_only": {
+      "group_district": {
+        "r2": 0.0956,
+        "n_features": 16
+      },
+      "random": {
+        "r2": 0.2577,
+        "n_features": 16
+      }
+    },
+    "all": {
+      "group_district": {
+        "r2": 0.1615,
+        "n_features": 26
+      },
+      "random": {
+        "r2": 0.3494,
+        "n_features": 26
+      }
+    }
+  },
+  "cv_gap": {
+    "linear": {
+      "r2_random": -0.3238,
+      "r2_group_area": -0.1038,
+      "r2_group_district": -0.6085,
+      "inflation_vs_area": -0.22,
+      "inflation_vs_district": 0.2847
+    },
+    "hgb": {
+      "r2_random": 0.3494,
+      "r2_group_area": 0.2666,
+      "r2_group_district": 0.1615,
+      "inflation_vs_area": 0.0828,
+      "inflation_vs_district": 0.1879
+    }
+  },
+  "importance": {
+    "fee_yuan": {
+      "mean": 0.5434,
+      "sd_across_folds": 0.0917
+    },
+    "aging": {
+      "mean": 0.0665,
+      "sd_across_folds": 0.0242
+    },
+    "log_area": {
+      "mean": 0.0616,
+      "sd_across_folds": 0.0425
+    },
+    "d_中心": {
+      "mean": 0.0333,
+      "sd_across_folds": 0.0524
+    },
+    "log_households": {
+      "mean": 0.0295,
+      "sd_across_folds": 0.0518
+    },
+    "d_医疗": {
+      "mean": 0.0174,
+      "sd_across_folds": 0.015
+    },
+    "d_公园": {
+      "mean": 0.0162,
+      "sd_across_folds": 0.0287
+    },
+    "d_地铁": {
+      "mean": 0.014,
+      "sd_across_folds": 0.0274
+    },
+    "n_fac_1000": {
+      "mean": -0.0125,
+      "sd_across_folds": 0.0058
+    },
+    "n_park_1000": {
+      "mean": -0.0097,
+      "sd_across_folds": 0.0125
+    },
+    "n_buildings": {
+      "mean": 0.0075,
+      "sd_across_folds": 0.0233
+    },
+    "d_购物": {
+      "mean": 0.0073,
+      "sd_across_folds": 0.0165
+    },
+    "complete_score": {
+      "mean": 0.005,
+      "sd_across_folds": 0.0125
+    },
+    "bt_板楼": {
+      "mean": 0.0034,
+      "sd_across_folds": 0.0047
+    },
+    "n_fac_500": {
+      "mean": -0.0018,
+      "sd_across_folds": 0.0065
+    },
+    "n_sub_1000": {
+      "mean": -0.0018,
+      "sd_across_folds": 0.0022
+    },
+    "bt_塔板结合": {
+      "mean": -0.0017,
+      "sd_across_folds": 0.0034
+    },
+    "bt_塔楼/塔板结合": {
+      "mean": 0.0005,
+      "sd_across_folds": 0.0007
+    },
+    "bt_塔楼/板楼/塔板结合": {
+      "mean": -0.0002,
+      "sd_across_folds": 0.0004
+    },
+    "d_教育": {
+      "mean": 0.0001,
+      "sd_across_folds": 0.0199
+    },
+    "bt_板楼/塔板结合": {
+      "mean": -0.0001,
+      "sd_across_folds": 0.0008
+    },
+    "bt_未知类型": {
+      "mean": 0.0001,
+      "sd_across_folds": 0.0002
+    },
+    "has_year": {
+      "mean": 0.0,
+      "sd_across_folds": 0.0001
+    },
+    "bt_塔楼/板楼": {
+      "mean": 0.0,
+      "sd_across_folds": 0.0024
+    },
+    "bt_塔楼": {
+      "mean": -0.0,
+      "sd_across_folds": 0.0001
+    },
+    "bt_other": {
+      "mean": 0.0,
+      "sd_across_folds": 0.0
+    }
+  },
+  "moran_residual": {
+    "I": 0.2337,
+    "p_perm": 0.001,
+    "k_neighbors": 8,
+    "weight": "row-standardized KNN",
+    "n": 525,
+    "expected_I": -0.0019,
+    "n_perm": 999
+  },
+  "random_state": 42
+}
