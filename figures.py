@@ -144,6 +144,31 @@ def _wrap_measured(fig, text: str, avail_pt: float, cjk_fp, latin_fp) -> list[st
     return lines
 
 
+def _draw_title(fig, y: float, no: int, title: str, cjk_fp, latin_fp,
+                color: str = "#1a1a1a") -> None:
+    """图号 + 题名。国标只写「空 1 个汉字的间隙」，但按字身量会因两侧字面空白
+    而看着偏宽，故按**墨迹间隙**对齐 1 个汉字宽：号前给 0.14 em 细空（「图1」
+    贴得太死会显挤），号后折成 0.72 em 字身间隙，实测墨迹间隙 ≈ 1 字。"""
+    p0, w0 = _mk_probe(fig, cjk_fp)
+    p1, w1 = _mk_probe(fig, latin_fp)
+    w = {0: w0, 1: w1}
+    em = cjk_fp.get_size_in_points()
+    pieces: list[tuple[object, float]] = [("图", w0("图")), (None, 0.14 * em),
+                                          (str(no), w1(str(no))), (None, 0.72 * em)]
+    for k, seg in _seg(title):
+        pieces.append((seg, w[k](seg)))
+    total = sum(v for _, v in pieces)
+    fw_pt = fig.get_figwidth() * 72
+    x = 0.5 - total / (2 * fw_pt)
+    for seg, adv in pieces:
+        if seg is not None:
+            fp = cjk_fp if (seg == "图" or not seg.isascii()) else latin_fp
+            fig.text(x, y, str(seg), fontproperties=fp, ha="left", va="bottom", color=color)
+        x += adv / fw_pt
+    p0.remove()
+    p1.remove()
+
+
 def _draw_mixed(fig, x0: float, y: float, text: str, cjk_fp, latin_fp, color: str,
                 centered: bool = False) -> None:
     """逐段落字：中文走黑体/宋体，西文走 Times New Roman，位置按实测字宽递推。"""
@@ -190,8 +215,7 @@ def add_caption(fig, ax, no: int, title: str, notes: list[str],
         y_pt = (pad * 72) + (len(lines) - 1 - i) * line_h_pt
         _draw_mixed(fig, box.x0, y_pt / (fig_h * 72), ln, cjk_n, lat_n, "#262626")
 
-    _draw_mixed(fig, 0.5, ((pad + h_notes + gap) / fig_h), f"图{no}　{title}",
-                cjk_t, lat_t, "#1a1a1a", centered=True)
+    _draw_title(fig, ((pad + h_notes + gap) / fig_h), no, title, cjk_t, lat_t)
 
 
 def load_all():
@@ -422,4 +446,5 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
 
