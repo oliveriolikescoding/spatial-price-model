@@ -8,6 +8,7 @@
 from __future__ import annotations
 
 import json
+import textwrap
 from pathlib import Path
 
 import geopandas as gpd
@@ -51,15 +52,53 @@ def setup_fonts() -> bool:
     return ok
 
 
-def add_caption(fig, no: int, title: str, notes: list[str], top: float,
-                step: float = 0.030) -> None:
-    """论文式图注（GB/T 7713.2—2022 §5.4.3）：图序与图题居中置于图下方，
-    图题自明（含地点与时段），其下接「注：…」说明行，黑色、字号小于正文。"""
-    fig.text(0.5, top, f"图 {no}　{title}", ha="center", va="top",
-             fontsize=12.5, fontweight="bold", color="#1a1a1a")
-    for i, n in enumerate(notes):
-        fig.text(0.5, top - 0.038 - i * step, n, ha="center", va="top",
-                 fontsize=8.6, color="#262626")
+def _wrap_measured(fig, text: str, avail_pt: float, fp) -> list[str]:
+    """按真实字宽断行。SimSun 的中文与西文字宽差异大，且全角空格无墨迹，
+    因此用渲染器量每行的实际宽度，而不是按字符数估。"""
+    ren = fig.canvas.get_renderer()
+    probe = fig.text(0, -40, "", fontproperties=fp)
+
+    def w(s: str) -> float:
+        probe.set_text(s)
+        return probe.get_window_extent(renderer=ren).width * 72 / fig.dpi
+
+    lines, cur = [], ""
+    for ch in text:
+        if cur and w(cur + ch) > avail_pt:
+            lines.append(cur)
+            cur = ch
+        else:
+            cur += ch
+    if cur:
+        lines.append(cur)
+    probe.remove()
+    return lines
+
+
+def add_caption(fig, ax, no: int, title: str, notes: list[str],
+                xlabel_space: float = 0.0) -> None:
+    """论文式图注（GB/T 7713.2—2022 §5.4.3 ＋ CY/T 171—2019 §7.2）：
+    图号与图题居中置于图下、字号小于正文、不加粗（黑体用字）；整图注置于图题下方，
+    左对齐、首行缩进 2 字、排字宽度不超过图宽，各条之间用分号、末条用句号。"""
+    body = "；".join(n.strip().rstrip("。") for n in notes) + "。"
+    fp = font_manager.FontProperties(family="SimSun", size=8.8)
+    box = ax.get_position()
+    avail_pt = fig.get_figwidth() * (box.x1 - box.x0) * 72 * 0.98  # 图宽
+    lines = _wrap_measured(fig, "　　" + body, avail_pt, fp)
+
+    fig_h = fig.get_figheight()
+    pad, gap = 0.20, 0.10
+    h_notes = len(lines) * 8.8 * 1.6 / 72
+    need = pad + h_notes + gap + 10.5 / 72 + xlabel_space + 0.06
+    fig.subplots_adjust(bottom=max(need / fig_h, fig.subplotpars.bottom),
+                        left=fig.subplotpars.left, right=fig.subplotpars.right,
+                        top=fig.subplotpars.top)
+
+    fig.text(box.x0, pad / fig_h, "\n".join(lines), ha="left", va="bottom",
+             fontsize=8.8, color="#262626", linespacing=1.6, fontfamily="SimSun")
+    fig.text(0.5, (pad + h_notes + gap) / fig_h, f"图 {no}　{title}",
+             ha="center", va="bottom", fontsize=10.5, fontfamily="SimHei",
+             color="#1a1a1a")
 
 
 def load_all():
@@ -75,7 +114,7 @@ def fig_cv_gap(cv: dict) -> Path:
     models = [("linear", "线性（岭回归）"), ("hgb", "梯度提升树")]
     colors = {0: "#C9D9E6", 1: "#5C86AE"}
 
-    fig, ax = plt.subplots(figsize=(12.6, 7.0))
+    fig, ax = plt.subplots(figsize=(12.6, 7.4))
     x = np.arange(len(schemes))
     width = 0.34
     for j, (mkey, mlabel) in enumerate(models):
@@ -93,13 +132,20 @@ def fig_cv_gap(cv: dict) -> Path:
     ax.text(len(schemes) - 0.42, 0.012, "", fontsize=9.5)
 
     gap = cv["cv_gap"]["hgb"]
-    # 用双头箭头 + 文字标出虚高量，放在两组柱子之间的空档，避免压住柱子和图例
-    xr = 1.62
-    ax.annotate("", xy=(xr, gap["r2_random"]), xytext=(xr, gap["r2_group_district"]),
-                arrowprops=dict(arrowstyle="<->", color=WARM, lw=1.5))
-    ax.text(xr + 0.05, (gap["r2_random"] + gap["r2_group_district"]) / 2,
+    # 双头箭头两端的 y 对齐被比较的两根柱子（随机折的树模型 vs 按区县折的树模型），
+    # 并用细虚引线把箭头连到柱顶，避免箭头悬空、指代不清
+    y_hi, y_lo = gap["r2_random"], gap["r2_group_district"]
+    x_rand = 0 + 0.5 * width
+    x_dist = 2 + 0.5 * width
+    xr = 1.78
+    for xa, ya in ((x_rand, y_hi), (x_dist, y_lo)):
+        ax.plot([xa, xr], [ya, ya], color=WARM, lw=0.9, ls=(0, (4, 3)), zorder=3)
+    ax.annotate("", xy=(xr, y_hi), xytext=(xr, y_lo),
+                arrowprops=dict(arrowstyle="<->", color=WARM, lw=1.4,
+                                shrinkA=0, shrinkB=0), zorder=4)
+    ax.text(xr - 0.08, y_hi + 0.03,
             f"虚高 {gap['inflation_vs_district'] * 100:.1f} 个百分点",
-            fontsize=11.5, color=WARM, ha="left", va="center", fontweight="bold")
+            fontsize=11, color=WARM, ha="right", va="bottom", fontweight="bold")
 
     ax.set_xticks(x)
     ax.set_xticklabels([s[1] for s in schemes], fontsize=11.5, fontfamily="SimSun")
@@ -107,8 +153,6 @@ def fig_cv_gap(cv: dict) -> Path:
     ax.set_ylim(-0.75, 0.60)
     ax.set_xlim(-0.62, 2.62)
     ax.axhspan(-0.75, 0, color="#F2F2F2", zorder=0)
-    ax.text(0.012, 0.055, "阴影区为负值：模型不如「直接猜区内均值」",
-            fontsize=9, color="#777777", transform=ax.transAxes)
     ax.grid(axis="y", ls=":", color="#CCCCCC", lw=0.7)
     ax.set_axisbelow(True)
     for s in ["top", "right"]:
@@ -119,14 +163,16 @@ def fig_cv_gap(cv: dict) -> Path:
     labels.append("基线 R² = 0（区内均值）")
     ax.legend(handles, labels, loc="upper right", frameon=False, fontsize=11)
 
-    fig.subplots_adjust(left=0.09, right=0.985, top=0.985, bottom=0.225)
+    fig.subplots_adjust(left=0.09, right=0.985, top=0.985, bottom=0.12)
     add_caption(
-        fig, 1, "成都中心城区住宅单价的交叉验证对比（2017 年）",
-        ["注：同一组特征与超参数，只更换切分方式；基线为区县内均值（R² = 0）。"
-         "样本 525 个住宅小区，5 个中心城区，26 个特征。",
+        fig, ax, 1, "成都中心城区住宅单价的交叉验证对比（2017 年）",
+        ["同一组特征与超参数，只更换切分方式",
+         "基线为区县内均值（R² = 0）；阴影区为负值，表示该模型的解释力低于直接用区内均值",
+         "样本 525 个住宅小区、5 个中心城区、26 个特征",
+         "指标为按测试集样本数加权的 5 折均值",
          "据 GitHub 公开数据集 sczhengyabin/Lianjia_House_Info（2017-08）与 OpenStreetMap "
-         "设施、住宅面（2026-11，ODbL）绘制。指标为按测试集样本数加权的 5 折均值。"],
-        top=0.168)
+         "设施、住宅面（2026-11，ODbL）绘制"],
+        xlabel_space=0.34)
     out = DOCS / "fig_cv_gap.png"
     fig.savefig(out, dpi=300, bbox_inches=None)
     plt.close(fig)
@@ -148,7 +194,7 @@ def fig_residual_map(oof: pd.DataFrame) -> Path:
                     cmap="RdBu_r", norm=norm, s=16, edgecolor="#333333",
                     linewidth=0.25, zorder=2)
     cb = fig.colorbar(sc, ax=ax, shrink=0.62, pad=0.02)
-    cb.set_label("预测偏差（%）：正值＝低估（实际更贵）", fontsize=10.5)
+    cb.set_label("预测偏差 / %", fontsize=10.5)
     cb.ax.tick_params(labelsize=9)
 
     # 区县名：只标有样本的区，位置取该区样本点的重心（district representative_point
@@ -206,16 +252,18 @@ def fig_residual_map(oof: pd.DataFrame) -> Path:
     except Exception:
         pass
 
-    fig.subplots_adjust(left=0.02, right=0.985, top=0.985, bottom=0.235)
+    fig.subplots_adjust(left=0.075, right=0.975, top=0.97, bottom=0.12)
     add_caption(
-        fig, 2, "成都中心城区住宅单价模型残差的空间分布（2017 年）",
-        ["注：梯度提升树，按区县分组 5 折的 out-of-fold 预测。残差 = 区内实际 log 单价与预测之差，"
-         "按该区 log 标准差还原为百分比。",
-         f"Moran's I = {moran['I']}（p = {moran['p_perm']}，8 邻域 KNN 权重，999 次置换）。"
-         "暖色为低估（实际更贵），冷色为高估；色阶截断于 ±95 分位。",
-         "片区标注取样本数 ≥ 8 的片区中位数。投影 WGS84，比例尺按 30.7°N 换算。"
-         "据 sczhengyabin/Lianjia_House_Info（2017-08）与 OSM（2026-11，ODbL）绘制。"],
-        top=0.130, step=0.032)
+        fig, ax, 2, "成都中心城区住宅单价模型残差的空间分布（2017 年）",
+        ["梯度提升树，按区县分组 5 折的 out-of-fold 预测",
+         "残差 = 区内实际 log 单价与预测值之差，按该区 log 单价的标准差还原为百分比",
+         "残差为正表示模型低估（实际单价高于预测），为负表示高估",
+         f"残差 Moran's I = {moran['I']}（p = {moran['p_perm']}，8 邻域 KNN 权重，999 次置换）",
+         "色阶截断于 ±95 分位；片区标注取样本数 ≥ 8 的片区中位数",
+         "投影 WGS84，比例尺按 30.7°N 换算",
+         "据 sczhengyabin/Lianjia_House_Info（2017-08）与 OSM（2026-11，ODbL）绘制"],
+        xlabel_space=0.42)
+    out = DOCS / "fig_residual_map.png"
     out = DOCS / "fig_residual_map.png"
     fig.savefig(out, dpi=300, bbox_inches=None)
     plt.close(fig)
@@ -254,14 +302,16 @@ def fig_importance(cv: dict) -> Path:
                        Patch(color="#9A9A9A", label="属性类（形态 + 配套）")],
               loc="lower right", frameon=False, fontsize=10.5)
 
-    fig.subplots_adjust(left=0.16, right=0.985, top=0.985, bottom=0.255)
+    fig.subplots_adjust(left=0.16, right=0.985, top=0.985, bottom=0.12)
     add_caption(
-        fig, 3, "成都中心城区住宅单价预测的置换特征重要性（2017 年）",
-        ["注：梯度提升树，按区县分组 5 折，在测试折上各做 15 次置换后取均值；误差棒为折间标准差。"
-         "置换成负值表示打乱该特征后模型反而略好，属噪声。",
-         "配色区分空间类（可达性、密度）与属性类（形态、配套）。置换重要性衡量相关性，不代表因果。"
-         "据 sczhengyabin/Lianjia_House_Info（2017-08）与 OSM（2026-11，ODbL）绘制。"],
-        top=0.168, step=0.032)
+        fig, ax, 3, "成都中心城区住宅单价预测的置换特征重要性（2017 年）",
+        ["梯度提升树，按区县分组 5 折，在测试折上各做 15 次置换后取均值",
+         "误差棒为折间标准差",
+         "置换重要性为负表示打乱该特征后模型略好，属噪声",
+         "配色区分空间类（可达性、密度）与属性类（形态、配套）",
+         "置换重要性衡量相关性，不代表因果",
+         "据 sczhengyabin/Lianjia_House_Info（2017-08）与 OSM（2026-11，ODbL）绘制"],
+        xlabel_space=0.55)
     out = DOCS / "fig_feature_importance.png"
     fig.savefig(out, dpi=300, bbox_inches=None)
     plt.close(fig)
