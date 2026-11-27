@@ -51,6 +51,16 @@ def setup_fonts() -> bool:
     return ok
 
 
+def add_caption(fig, no: int, title: str, notes: list[str], top: float,
+                step: float = 0.030) -> None:
+    """论文式图注：图号 + 题名居中放在图下，其后接说明行（小字、灰色）。"""
+    fig.text(0.5, top, f"图 {no}　{title}", ha="center", va="top",
+             fontsize=12.5, fontweight="bold", color="#1a1a1a")
+    for i, n in enumerate(notes):
+        fig.text(0.5, top - 0.038 - i * step, n, ha="center", va="top",
+                 fontsize=8.4, color="#555555")
+
+
 def load_all():
     cv = json.loads((BUILD / "cv_results.json").read_text(encoding="utf-8"))
     oof = pd.read_csv(BUILD / "oof_predictions.csv", encoding="utf-8-sig")
@@ -64,7 +74,7 @@ def fig_cv_gap(cv: dict) -> Path:
     models = [("linear", "线性（岭回归）"), ("hgb", "梯度提升树")]
     colors = {0: "#C9D9E6", 1: "#5C86AE"}
 
-    fig, ax = plt.subplots(figsize=(12.6, 6.6))
+    fig, ax = plt.subplots(figsize=(12.6, 7.0))
     x = np.arange(len(schemes))
     width = 0.34
     for j, (mkey, mlabel) in enumerate(models):
@@ -108,17 +118,14 @@ def fig_cv_gap(cv: dict) -> Path:
     labels.append("基线 R² = 0（区内均值）")
     ax.legend(handles, labels, loc="upper right", frameon=False, fontsize=11)
 
-    fig.text(0.012, 0.965, "图 1　切分方式对预测精度的影响：随机 vs 空间分组",
-             fontsize=14.5, fontweight="bold")
-    fig.text(0.012, 0.905,
-             f"样本 525 个住宅小区 · 5 个中心城区 · 26 个特征 · 目标为区县内 log 单价 z-score · 制图 {MAP_DATE}",
-             fontsize=9.5, color="#555555")
-    fig.text(0.012, 0.035,
-             "数据：链家小区挂牌（2017-08 口径）＋ OpenStreetMap 设施/住宅面（2026-11 快照，ODbL）　"
-             "方法：同一份特征下比较 3 种切分 × 2 个模型，指标为按测试集样本数加权的折均值　　"
-             "制图：Matplotlib，宋体 + Times New Roman",
-             fontsize=8.5, color="#666666")
-    fig.subplots_adjust(left=0.07, right=0.985, top=0.87, bottom=0.12)
+    fig.subplots_adjust(left=0.09, right=0.985, top=0.985, bottom=0.225)
+    add_caption(
+        fig, 1, "交叉验证方式对模型精度的影响",
+        ["同一组特征与超参数，只更换切分方式；基线为区县内均值（R² = 0）。"
+         "样本 525 个住宅小区，5 个中心城区，26 个特征。",
+         "数据：链家小区挂牌（2017-08）＋ OpenStreetMap 设施与住宅面（2026-11，ODbL）。"
+         "指标为按测试集样本数加权的 5 折均值。制图：Matplotlib，宋体 + Times New Roman。"],
+        top=0.168)
     out = DOCS / "fig_cv_gap.png"
     fig.savefig(out, dpi=300, bbox_inches=None)
     plt.close(fig)
@@ -198,20 +205,16 @@ def fig_residual_map(oof: pd.DataFrame) -> Path:
     except Exception:
         pass
 
-    fig.text(0.012, 0.965, "图 2　模型残差的空间分布：它在哪里系统性看错",
-             fontsize=14.5, fontweight="bold")
-    fig.text(0.012, 0.908,
-             "梯度提升树 · 按区县分组 5 折交叉验证的 out-of-fold 预测 · "
-             f"残差 Moran's I = {moran['I']}（p = {moran['p_perm']}，8 邻域）", fontsize=9.5, color="#555555")
-    fig.text(0.012, 0.05,
-             "数据：链家小区挂牌（2017-08）＋ OSM 设施/住宅面（2026-11，ODbL）　"
-             "投影：WGS84 经纬度（比例尺按 30.7°N 换算）　制图：2026-11-27",
-             fontsize=8.5, color="#666666")
-    fig.text(0.012, 0.028,
-             "方法：残差 = 同区县内实际 log 单价与预测之差，百分比由该区 log 标准差还原；"
-             "片区标注取样本 ≥8 的片区中位数　注：色阶截断于 ±95 分位",
-             fontsize=8.5, color="#666666")
-    fig.subplots_adjust(left=0.02, right=0.985, top=0.88, bottom=0.135)
+    fig.subplots_adjust(left=0.02, right=0.985, top=0.985, bottom=0.235)
+    add_caption(
+        fig, 2, "模型残差的空间分布",
+        ["梯度提升树，按区县分组 5 折的 out-of-fold 预测。残差 = 区内实际 log 单价与预测之差，"
+         "按该区 log 标准差还原为百分比。",
+         f"Moran's I = {moran['I']}（p = {moran['p_perm']}，8 邻域 KNN 权重，999 次置换）。"
+         "暖色为低估（实际更贵），冷色为高估；色阶截断于 ±95 分位。",
+         "片区标注取样本数 ≥ 8 的片区中位数。投影 WGS84，比例尺按 30.7°N 换算。"
+         "数据：链家挂牌（2017-08）＋ OSM（2026-11，ODbL）。制图 2026-11-27。"],
+        top=0.130, step=0.032)
     out = DOCS / "fig_residual_map.png"
     fig.savefig(out, dpi=300, bbox_inches=None)
     plt.close(fig)
@@ -250,16 +253,14 @@ def fig_importance(cv: dict) -> Path:
                        Patch(color="#9A9A9A", label="属性类（形态 + 配套）")],
               loc="lower right", frameon=False, fontsize=10.5)
 
-    fig.text(0.012, 0.962, "图 3　谁在解释区内的价差：空间特征 vs 小区自身属性",
-             fontsize=14.5, fontweight="bold")
-    fig.text(0.012, 0.912,
-             "梯度提升树 · 按区县分组 5 折 · 在测试折上做 15 次置换 · 误差棒为折间标准差",
-             fontsize=9.5, color="#555555")
-    fig.text(0.012, 0.033,
-             "数据：链家小区挂牌（2017-08）＋ OSM 设施/住宅面（2026-11，ODbL）　"
-             "方法：置换重要性（r2），5 折独立置换取均值　制图 2026-11-27　注：衡量相关性，不等于因果",
-             fontsize=8.5, color="#666666")
-    fig.subplots_adjust(left=0.16, right=0.985, top=0.88, bottom=0.145)
+    fig.subplots_adjust(left=0.16, right=0.985, top=0.985, bottom=0.255)
+    add_caption(
+        fig, 3, "各特征的置换重要性",
+        ["梯度提升树，按区县分组 5 折，在测试折上各做 15 次置换后取均值；误差棒为折间标准差。"
+         "置换成负值表示打乱该特征后模型反而略好，属噪声。",
+         "数据：链家小区挂牌（2017-08）＋ OSM（2026-11，ODbL）。配色区分空间类（可达性、密度）"
+         "与属性类（形态、配套）。置换重要性衡量相关性，不代表因果。制图 2026-11-27。"],
+        top=0.168, step=0.032)
     out = DOCS / "fig_feature_importance.png"
     fig.savefig(out, dpi=300, bbox_inches=None)
     plt.close(fig)
