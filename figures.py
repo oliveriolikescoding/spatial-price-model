@@ -53,12 +53,13 @@ def setup_fonts() -> bool:
 
 def add_caption(fig, no: int, title: str, notes: list[str], top: float,
                 step: float = 0.030) -> None:
-    """论文式图注：图号 + 题名居中放在图下，其后接说明行（小字、灰色）。"""
+    """论文式图注（GB/T 7713.2—2022 §5.4.3）：图序与图题居中置于图下方，
+    图题自明（含地点与时段），其下接「注：…」说明行，黑色、字号小于正文。"""
     fig.text(0.5, top, f"图 {no}　{title}", ha="center", va="top",
              fontsize=12.5, fontweight="bold", color="#1a1a1a")
     for i, n in enumerate(notes):
         fig.text(0.5, top - 0.038 - i * step, n, ha="center", va="top",
-                 fontsize=8.4, color="#555555")
+                 fontsize=8.6, color="#262626")
 
 
 def load_all():
@@ -101,7 +102,7 @@ def fig_cv_gap(cv: dict) -> Path:
             fontsize=11.5, color=WARM, ha="left", va="center", fontweight="bold")
 
     ax.set_xticks(x)
-    ax.set_xticklabels([s[1] for s in schemes], fontsize=11.5)
+    ax.set_xticklabels([s[1] for s in schemes], fontsize=11.5, fontfamily="SimSun")
     ax.set_ylabel("R²（解释区内价差的份额）", fontsize=11.5)
     ax.set_ylim(-0.75, 0.60)
     ax.set_xlim(-0.62, 2.62)
@@ -120,11 +121,11 @@ def fig_cv_gap(cv: dict) -> Path:
 
     fig.subplots_adjust(left=0.09, right=0.985, top=0.985, bottom=0.225)
     add_caption(
-        fig, 1, "交叉验证方式对模型精度的影响",
-        ["同一组特征与超参数，只更换切分方式；基线为区县内均值（R² = 0）。"
+        fig, 1, "成都中心城区住宅单价的交叉验证对比（2017 年）",
+        ["注：同一组特征与超参数，只更换切分方式；基线为区县内均值（R² = 0）。"
          "样本 525 个住宅小区，5 个中心城区，26 个特征。",
-         "数据：链家小区挂牌（2017-08）＋ OpenStreetMap 设施与住宅面（2026-11，ODbL）。"
-         "指标为按测试集样本数加权的 5 折均值。制图：Matplotlib，宋体 + Times New Roman。"],
+         "据 GitHub 公开数据集 sczhengyabin/Lianjia_House_Info（2017-08）与 OpenStreetMap "
+         "设施、住宅面（2026-11，ODbL）绘制。指标为按测试集样本数加权的 5 折均值。"],
         top=0.168)
     out = DOCS / "fig_cv_gap.png"
     fig.savefig(out, dpi=300, bbox_inches=None)
@@ -207,13 +208,13 @@ def fig_residual_map(oof: pd.DataFrame) -> Path:
 
     fig.subplots_adjust(left=0.02, right=0.985, top=0.985, bottom=0.235)
     add_caption(
-        fig, 2, "模型残差的空间分布",
-        ["梯度提升树，按区县分组 5 折的 out-of-fold 预测。残差 = 区内实际 log 单价与预测之差，"
+        fig, 2, "成都中心城区住宅单价模型残差的空间分布（2017 年）",
+        ["注：梯度提升树，按区县分组 5 折的 out-of-fold 预测。残差 = 区内实际 log 单价与预测之差，"
          "按该区 log 标准差还原为百分比。",
          f"Moran's I = {moran['I']}（p = {moran['p_perm']}，8 邻域 KNN 权重，999 次置换）。"
          "暖色为低估（实际更贵），冷色为高估；色阶截断于 ±95 分位。",
          "片区标注取样本数 ≥ 8 的片区中位数。投影 WGS84，比例尺按 30.7°N 换算。"
-         "数据：链家挂牌（2017-08）＋ OSM（2026-11，ODbL）。制图 2026-11-27。"],
+         "据 sczhengyabin/Lianjia_House_Info（2017-08）与 OSM（2026-11，ODbL）绘制。"],
         top=0.130, step=0.032)
     out = DOCS / "fig_residual_map.png"
     fig.savefig(out, dpi=300, bbox_inches=None)
@@ -255,11 +256,11 @@ def fig_importance(cv: dict) -> Path:
 
     fig.subplots_adjust(left=0.16, right=0.985, top=0.985, bottom=0.255)
     add_caption(
-        fig, 3, "各特征的置换重要性",
-        ["梯度提升树，按区县分组 5 折，在测试折上各做 15 次置换后取均值；误差棒为折间标准差。"
+        fig, 3, "成都中心城区住宅单价预测的置换特征重要性（2017 年）",
+        ["注：梯度提升树，按区县分组 5 折，在测试折上各做 15 次置换后取均值；误差棒为折间标准差。"
          "置换成负值表示打乱该特征后模型反而略好，属噪声。",
-         "数据：链家小区挂牌（2017-08）＋ OSM（2026-11，ODbL）。配色区分空间类（可达性、密度）"
-         "与属性类（形态、配套）。置换重要性衡量相关性，不代表因果。制图 2026-11-27。"],
+         "配色区分空间类（可达性、密度）与属性类（形态、配套）。置换重要性衡量相关性，不代表因果。"
+         "据 sczhengyabin/Lianjia_House_Info（2017-08）与 OSM（2026-11，ODbL）绘制。"],
         top=0.168, step=0.032)
     out = DOCS / "fig_feature_importance.png"
     fig.savefig(out, dpi=300, bbox_inches=None)
