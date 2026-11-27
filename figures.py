@@ -8,6 +8,7 @@
 from __future__ import annotations
 
 import json
+import re
 import textwrap
 from pathlib import Path
 
@@ -52,39 +53,129 @@ def setup_fonts() -> bool:
     return ok
 
 
-def _wrap_measured(fig, text: str, avail_pt: float, fp) -> list[str]:
-    """按真实字宽断行。SimSun 的中文与西文字宽差异大，且全角空格无墨迹，
-    因此用渲染器量每行的实际宽度，而不是按字符数估。"""
-    ren = fig.canvas.get_renderer()
-    probe = fig.text(0, -40, "", fontproperties=fp)
+# 断行用：西文/数字串整体不拆；行末禁则与行首禁则（简易避头尾）
+_LATIN_TOKEN = re.compile(r"[A-Za-z0-9][A-Za-z0-9\.\-_/+]*")
+_NO_LINE_END = "（【《〈“‘〔"
+_NO_LINE_START = "）】》〉”’〕、。，；：！？%‰"
 
-    def w(s: str) -> float:
-        probe.set_text(s)
-        return probe.get_window_extent(renderer=ren).width * 72 / fig.dpi
+
+def _seg(text: str) -> list[tuple[int, str]]:
+    """按字符集切段：0 = 中文（含全角标点、全角空格），1 = 西文（ASCII）。"""
+    out: list[tuple[int, str]] = []
+    for ch in text:
+        k = 1 if ord(ch) < 128 else 0
+        if out and out[-1][0] == k:
+            out[-1] = (k, out[-1][1] + ch)
+        else:
+            out.append((k, ch))
+    return out
+
+
+def _mk_probe(fig, fp):
+    """量字宽。用两端加哨兵字的方式做差，避免「纯空格/无墨迹字符串」的
+    extent 宽为 0（会把全角空格吞掉，导致图号与题名之间只剩一点缝隙）。"""
+    p = fig.text(0, -40, "", fontproperties=fp)
+    ren = fig.canvas.get_renderer()
+
+    def ext(s: str) -> float:
+        p.set_text(s)
+        return p.get_window_extent(renderer=ren).width * 72 / fig.dpi
+
+    def width_pt(s: str) -> float:
+        if not s:
+            return 0.0
+        return ext("x" + s + "x") - ext("xx")
+
+    return p, width_pt
+
+
+def _tokens(text: str) -> list[str]:
+    """把文本拆成不可再分的排版单元：西文/数字串整体不拆，中文逐字。"""
+    out: list[str] = []
+    i = 0
+    while i < len(text):
+        m = _LATIN_TOKEN.match(text, i)
+        if m and m.end() > i:
+            tok = m.group(0)
+            if m.end() < len(text) and text[m.end()] in "%‰℃":
+                tok += text[m.end()]
+                i = m.end() + 1
+            else:
+                i = m.end()
+            out.append(tok)
+        else:
+            out.append(text[i])
+            i += 1
+    return out
+
+
+def _wrap_measured(fig, text: str, avail_pt: float, cjk_fp, latin_fp) -> list[str]:
+    """按真实字宽断行：中文用 SimSun、西文用 Times New Roman 各量各的字宽。
+    西文与数字串不拆开；并简单避头尾（行末不排「（」，行首不排「）」等标点）。"""
+    p0, w0 = _mk_probe(fig, cjk_fp)
+    p1, w1 = _mk_probe(fig, latin_fp)
+    w = {0: w0, 1: w1}
+
+    def width(s: str) -> float:
+        return sum(w[k](seg) for k, seg in _seg(s))
 
     lines, cur = [], ""
-    for ch in text:
-        if cur and w(cur + ch) > avail_pt:
-            lines.append(cur)
-            cur = ch
+    for tok in _tokens(text):
+        cand = cur + tok
+        if cur and width(cand) > avail_pt:
+            if cur[-1] in _NO_LINE_END and len(cur) > 1:
+                lines.append(cur[:-1])
+                cur = cur[-1] + tok
+            else:
+                lines.append(cur)
+                cur = tok
         else:
-            cur += ch
+            cur = cand
     if cur:
         lines.append(cur)
-    probe.remove()
+
+    # 行首禁则：标点留在上一行末（允许轻微悬挂，但不超图宽）
+    for i in range(1, len(lines)):
+        while lines[i] and lines[i][0] in _NO_LINE_START and width(lines[i - 1] + lines[i][0]) <= avail_pt * 1.02:
+            lines[i - 1] += lines[i][0]
+            lines[i] = lines[i][1:]
+    p0.remove()
+    p1.remove()
     return lines
+
+
+def _draw_mixed(fig, x0: float, y: float, text: str, cjk_fp, latin_fp, color: str,
+                centered: bool = False) -> None:
+    """逐段落字：中文走黑体/宋体，西文走 Times New Roman，位置按实测字宽递推。"""
+    p0, w0 = _mk_probe(fig, cjk_fp)
+    p1, w1 = _mk_probe(fig, latin_fp)
+    w = {0: w0, 1: w1}
+    total = sum(w[k](seg) for k, seg in _seg(text))
+    fw_pt = fig.get_figwidth() * 72
+    x = (x0 - total / (2 * fw_pt)) if centered else x0
+    for k, seg in _seg(text):
+        fp = cjk_fp if k == 0 else latin_fp
+        fig.text(x, y, seg, fontproperties=fp, ha="left", va="bottom", color=color)
+        x += w[k](seg) / fw_pt
+    p0.remove()
+    p1.remove()
 
 
 def add_caption(fig, ax, no: int, title: str, notes: list[str],
                 xlabel_space: float = 0.0) -> None:
     """论文式图注（GB/T 7713.2—2022 §5.4.3 ＋ CY/T 171—2019 §7.2）：
     图号与图题居中置于图下、字号小于正文、不加粗（黑体用字）；整图注置于图题下方，
-    左对齐、首行缩进 2 字、排字宽度不超过图宽，各条之间用分号、末条用句号。"""
+    左对齐、首行缩进 2 字、排字宽度不超过图宽，各条之间用分号、末条用句号。
+    中文与西文分别用宋体/黑体与 Times New Roman 排。"""
     body = "；".join(n.strip().rstrip("。") for n in notes) + "。"
-    fp = font_manager.FontProperties(family="SimSun", size=8.8)
+    cjk_n = font_manager.FontProperties(family="SimSun", size=8.8)
+    lat_n = font_manager.FontProperties(family="Times New Roman", size=8.8)
+    cjk_t = font_manager.FontProperties(family="SimHei", size=10.5)
+    lat_t = font_manager.FontProperties(family="Times New Roman", size=10.5)
+
     box = ax.get_position()
     avail_pt = fig.get_figwidth() * (box.x1 - box.x0) * 72 * 0.98  # 图宽
-    lines = _wrap_measured(fig, "　　" + body, avail_pt, fp)
+    lines = _wrap_measured(fig, "　　" + body, avail_pt, cjk_n, lat_n)
 
     fig_h = fig.get_figheight()
     pad, gap = 0.20, 0.10
@@ -94,11 +185,13 @@ def add_caption(fig, ax, no: int, title: str, notes: list[str],
                         left=fig.subplotpars.left, right=fig.subplotpars.right,
                         top=fig.subplotpars.top)
 
-    fig.text(box.x0, pad / fig_h, "\n".join(lines), ha="left", va="bottom",
-             fontsize=8.8, color="#262626", linespacing=1.6, fontfamily="SimSun")
-    fig.text(0.5, (pad + h_notes + gap) / fig_h, f"图 {no}　{title}",
-             ha="center", va="bottom", fontsize=10.5, fontfamily="SimHei",
-             color="#1a1a1a")
+    line_h_pt = 8.8 * 1.6
+    for i, ln in enumerate(lines):
+        y_pt = (pad * 72) + (len(lines) - 1 - i) * line_h_pt
+        _draw_mixed(fig, box.x0, y_pt / (fig_h * 72), ln, cjk_n, lat_n, "#262626")
+
+    _draw_mixed(fig, 0.5, ((pad + h_notes + gap) / fig_h), f"图{no}　{title}",
+                cjk_t, lat_t, "#1a1a1a", centered=True)
 
 
 def load_all():
